@@ -23,8 +23,8 @@ public class SceneSectionManager : MonoBehaviour
     void Start()
     {
         //playerTransform = GameObject.Find("Player").GetComponent<Transform>();
-        instantiatedSceneSections.Add(GameObject.Find("SceneSegmentTypeA"));
-        instantiatedSceneSections.Add(GameObject.Find("SceneSegmentTypeA (1)"));
+        instantiatedSceneSections.Add(GameObject.Find("Segment BEGINNING"));
+        //instantiatedSceneSections.Add(GameObject.Find("Segment SECOND"));     //this will be done but not yet
     }
 
     // Update is called once per frame
@@ -40,7 +40,8 @@ public class SceneSectionManager : MonoBehaviour
         if (transform.position.z > lastSpawnedZ - 300)
         {
             lastSpawnedZ += 400;
-            var GO = Instantiate(sceneSections[0]);
+            int rand = Random.Range(0, sceneSections.Length);
+            var GO = Instantiate(sceneSections[rand]);
             GO.transform.Translate(0, 0, lastSpawnedZ);
             instantiatedSceneSections.Add(GO);
             DeletePastSection();
