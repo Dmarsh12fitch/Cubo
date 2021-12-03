@@ -9,7 +9,7 @@ public class SceneSectionManager : MonoBehaviour
 
     //private Transform playerTransform;
 
-    private int lastSpawnedZ = 400;
+    private int lastSpawnedZ = 1200;
 
 
 
@@ -37,7 +37,7 @@ public class SceneSectionManager : MonoBehaviour
 
     void CheckToSpawnNextSection()
     {
-        if (transform.position.z > lastSpawnedZ - 300)
+        if (transform.position.z > lastSpawnedZ - 1100)
         {
             lastSpawnedZ += 400;
             int rand = Random.Range(0, sceneSections.Length);
