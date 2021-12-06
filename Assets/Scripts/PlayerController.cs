@@ -51,12 +51,12 @@ public class PlayerController : MonoBehaviour
     {
         if (!Dead)
         {
-
-                Debug.Log("Vel : " + rb.velocity.z);
+            Debug.Log("BEFORE : " + rb.velocity.z);
             //only when not boosting
             if (rb.velocity.z < speed + 1 && !inFloat)
             {
                 rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y, speed);
+                Debug.Log("AFTER : " + rb.velocity.z);
             }
 
             //only during boosting
@@ -67,7 +67,8 @@ public class PlayerController : MonoBehaviour
                     rb.velocity = new Vector3(rb.velocity.x, 0, boostSpeed);
                 } else
                 {
-                    inBoost = false;
+                    inFloat = false;
+                    rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y, speed);
                 }
                 timer -= Time.deltaTime;
                 if (timer <= 0)
