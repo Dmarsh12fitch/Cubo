@@ -8,9 +8,7 @@ public class PlayerController : MonoBehaviour
     private MeshRenderer rend;
     public string currentMaterialString;
 
-
     public GameObject prefabExplosion;
-
 
     //private Transform camTransform;
     //private CinemachineCameraOffset cinemachineCameraOffset;
@@ -24,7 +22,7 @@ public class PlayerController : MonoBehaviour
     private float moveToX;
 
     private float boostDuration = 0.4f;
-    private float boostSpeed = 90f;
+    private float boostSpeed = 120f;
     private float speed = 30f;
     private float jumpMod = 7.5f;
 
@@ -33,6 +31,7 @@ public class PlayerController : MonoBehaviour
     private int currentMatIndex;
 
     private float timer;
+    private bool Dead;
 
 
 
@@ -50,60 +49,69 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //only when not boosting
-        if (rb.velocity.z < speed + 1 && !inBoost)
+        if (!Dead)
         {
-            rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y, speed);
-        }
 
-        //only during boosting
-        if (inBoost)
-        {
-            if (inFloat)
+                Debug.Log("Vel : " + rb.velocity.z);
+            //only when not boosting
+            if (rb.velocity.z < speed + 1 && !inFloat)
             {
-                rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+                rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y, speed);
             }
-            timer -= Time.deltaTime;
-            if(timer <= 0)
-            {
-                timer = 0.05f;
-                randomColorSwap();
-            }
-        }
 
-        if (inMove)
-        {
-            if(moveDirection == -1)
+            //only during boosting
+            if (inBoost)
             {
-                //moving left
-                if(transform.position.x > moveToX + 0.05f)
+                if (inFloat)
                 {
-                    rb.velocity = new Vector3(moveDirection * speed / 5, rb.velocity.y, rb.velocity.z);
+                    rb.velocity = new Vector3(rb.velocity.x, 0, boostSpeed);
                 } else
                 {
-                    inMove = false;
-                    rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
-                    transform.position = new Vector3(moveToX, transform.position.y, transform.position.z + Time.deltaTime);
-                    return;
+                    inBoost = false;
                 }
-            } else if(moveDirection == 1)
-            {
-                //moving right
-                if (transform.position.x < moveToX - 0.05f)
+                timer -= Time.deltaTime;
+                if (timer <= 0)
                 {
-                    rb.velocity = new Vector3(moveDirection * speed / 5, rb.velocity.y, rb.velocity.z);
-                }
-                else
-                {
-                    inMove = false;
-                    rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
-                    transform.position = new Vector3(moveToX, transform.position.y, transform.position.z + Time.deltaTime);
-                    return;
+                    timer = 0.05f;
+                    randomColorSwap();
                 }
             }
 
-        }
+            if (inMove)
+            {
+                if (moveDirection == -1)
+                {
+                    //moving left
+                    if (transform.position.x > moveToX + 0.05f)
+                    {
+                        rb.velocity = new Vector3(moveDirection * speed / 5, rb.velocity.y, rb.velocity.z);
+                    }
+                    else
+                    {
+                        inMove = false;
+                        rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
+                        transform.position = new Vector3(moveToX, transform.position.y, transform.position.z);
+                        return;
+                    }
+                }
+                else if (moveDirection == 1)
+                {
+                    //moving right
+                    if (transform.position.x < moveToX - 0.05f)
+                    {
+                        rb.velocity = new Vector3(moveDirection * speed / 5, rb.velocity.y, rb.velocity.z);
+                    }
+                    else
+                    {
+                        inMove = false;
+                        rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
+                        transform.position = new Vector3(moveToX, transform.position.y, transform.position.z);
+                        return;
+                    }
+                }
 
+            }
+        }
     }
 
 
@@ -112,7 +120,7 @@ public class PlayerController : MonoBehaviour
 
     public void tryJump()
     {
-        if (!inAir)
+        if (!inAir && !Dead)
         {
             inAir = true;
             rb.AddForce(new Vector3(0, jumpMod, 0), ForceMode.Impulse);
@@ -121,7 +129,7 @@ public class PlayerController : MonoBehaviour
 
     public void tryBoost()
     {
-        if(inAir && !inBoost)
+        if(inAir && !inBoost && !Dead)
         {
             StartCoroutine(boostTime());
             rb.velocity = new Vector3(0, 0, boostSpeed);
@@ -130,34 +138,38 @@ public class PlayerController : MonoBehaviour
 
     public void tryMove(int moveThisAmount)
     {
-        //if in right or left lanes
-        if((transform.position.x >= 0.9f && moveThisAmount == -1) || (transform.position.x <= -0.9f && moveThisAmount == 1))
+        if (!Dead)
         {
-            moveToX = 0;
+            //if in right or left lanes
+            if ((transform.position.x >= 0.9f && moveThisAmount == -1) || (transform.position.x <= -0.9f && moveThisAmount == 1))
+            {
+                moveToX = 0;
 
-            //if in center
-        }
-        else if(transform.position.x <= 0.1f && transform.position.x >= -0.1f)
-        {
-            if(moveThisAmount == -1)
-            {
-                moveToX = -1;
-            } else if(moveThisAmount == 1)
-            {
-                moveToX = 1;
+                //if in center
             }
-        }
+            else if (transform.position.x <= 0.1f && transform.position.x >= -0.1f)
+            {
+                if (moveThisAmount == -1)
+                {
+                    moveToX = -1;
+                }
+                else if (moveThisAmount == 1)
+                {
+                    moveToX = 1;
+                }
+            }
 
-        //set direction
-        if (transform.position.x > moveToX)
-        {
-            moveDirection = -1;
+            //set direction
+            if (transform.position.x > moveToX)
+            {
+                moveDirection = -1;
+            }
+            else if (transform.position.x < moveToX)
+            {
+                moveDirection = 1;
+            }
+            inMove = true;
         }
-        else if (transform.position.x < moveToX)
-        {
-            moveDirection = 1;
-        }
-        inMove = true;
     }
 
 
@@ -212,6 +224,7 @@ public class PlayerController : MonoBehaviour
             {
                 //explode you!
                 Debug.Log("you lose!");
+                Debug.Log(" collided with : " + collision.gameObject.name);
                 killPlayer();
             }
         }
@@ -219,7 +232,6 @@ public class PlayerController : MonoBehaviour
 
     void randomColorSwap()
     {
-        
         int randMatIndex = Random.Range(0, prefabsMaterials.Length);
         while(randMatIndex == currentMatIndex)
         {
@@ -237,7 +249,7 @@ public class PlayerController : MonoBehaviour
         GO.GetComponent<ParticleSystem>().GetComponent<ParticleSystemRenderer>().material = prefabsMaterials[currentMatIndex];
         GameObject GO2 = Instantiate(prefabExplosion, gameObject.transform.position, gameObject.transform.rotation);
         GO2.GetComponent<ParticleSystem>().GetComponent<ParticleSystemRenderer>().material = prefabsMaterials[currentMatIndex];
-        Destroy(GetComponent<PlayerController>());
+        Dead = true;
         Destroy(GetComponent<Rigidbody>());
         Destroy(GetComponent<MeshRenderer>());
     }
