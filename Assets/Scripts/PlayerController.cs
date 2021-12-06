@@ -8,6 +8,10 @@ public class PlayerController : MonoBehaviour
     private MeshRenderer rend;
     public string currentMaterialString;
 
+
+    public GameObject prefabExplosion;
+
+
     //private Transform camTransform;
     //private CinemachineCameraOffset cinemachineCameraOffset;
 
@@ -19,13 +23,14 @@ public class PlayerController : MonoBehaviour
     private float moveDirection;
     private float moveToX;
 
-    private float boostDuration = 0.5f;
-    private float boostSpeed = 60f;
+    private float boostDuration = 0.4f;
+    private float boostSpeed = 90f;
     private float speed = 30f;
     private float jumpMod = 7.5f;
 
     public Material[] prefabsMaterials;
     public string[] prefabMaterialsNAMES;
+    private int currentMatIndex;
 
     private float timer;
 
@@ -68,12 +73,35 @@ public class PlayerController : MonoBehaviour
 
         if (inMove)
         {
-            rb.velocity = new Vector3(moveDirection * 5, rb.velocity.y, rb.velocity.z);
-            if(Mathf.Abs(moveToX - transform.position.x) < 0.05f)
+            if(moveDirection == -1)
             {
-                rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
-                inMove = false;
+                //moving left
+                if(transform.position.x > moveToX + 0.05f)
+                {
+                    rb.velocity = new Vector3(moveDirection * speed / 5, rb.velocity.y, rb.velocity.z);
+                } else
+                {
+                    inMove = false;
+                    rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
+                    transform.position = new Vector3(moveToX, transform.position.y, transform.position.z + Time.deltaTime);
+                    return;
+                }
+            } else if(moveDirection == 1)
+            {
+                //moving right
+                if (transform.position.x < moveToX - 0.05f)
+                {
+                    rb.velocity = new Vector3(moveDirection * speed / 5, rb.velocity.y, rb.velocity.z);
+                }
+                else
+                {
+                    inMove = false;
+                    rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
+                    transform.position = new Vector3(moveToX, transform.position.y, transform.position.z + Time.deltaTime);
+                    return;
+                }
             }
+
         }
 
     }
@@ -96,26 +124,42 @@ public class PlayerController : MonoBehaviour
         if(inAir && !inBoost)
         {
             StartCoroutine(boostTime());
-            //rb.AddForce(new Vector3(0, 0, boostSpeed), ForceMode.Impulse);
             rb.velocity = new Vector3(0, 0, boostSpeed);
         }
     }
 
     public void tryMove(int moveThisAmount)
     {
-        if(!(transform.position.x + moveThisAmount < -1.5 || transform.position.x + moveThisAmount > 1.5))
+        //if in right or left lanes
+        if((transform.position.x >= 0.9f && moveThisAmount == -1) || (transform.position.x <= -0.9f && moveThisAmount == 1))
         {
-            moveToX = transform.position.x + moveThisAmount;
-            if(transform.position.x > moveToX)
-            {
-                moveDirection = -1;
-            } else if(transform.position.x < moveToX)
-            {
-                moveDirection = 1;
-            }
-            inMove = true;
+            moveToX = 0;
+
+            //if in center
         }
+        else if(transform.position.x <= 0.1f && transform.position.x >= -0.1f)
+        {
+            if(moveThisAmount == -1)
+            {
+                moveToX = -1;
+            } else if(moveThisAmount == 1)
+            {
+                moveToX = 1;
+            }
+        }
+
+        //set direction
+        if (transform.position.x > moveToX)
+        {
+            moveDirection = -1;
+        }
+        else if (transform.position.x < moveToX)
+        {
+            moveDirection = 1;
+        }
+        inMove = true;
     }
+
 
 
     IEnumerator boostTime()
@@ -163,21 +207,40 @@ public class PlayerController : MonoBehaviour
                 //rb.AddForce(new Vector3(0, 0, speed / 2), ForceMode.Impulse);
             } else if(collision.gameObject.CompareTag("BLACK") || collision.gameObject.CompareTag("RED")
                 || collision.gameObject.CompareTag("YELLOW") || collision.gameObject.CompareTag("BLUE")
-                || collision.gameObject.CompareTag("GREEN"))
+                || collision.gameObject.CompareTag("GREEN") || collision.gameObject.CompareTag("PURPLE")
+                || collision.gameObject.CompareTag("WHITE"))
             {
                 //explode you!
-                Debug.Log("YOU LOSE!!!");
+                Debug.Log("you lose!");
+                killPlayer();
             }
         }
     }
 
     void randomColorSwap()
     {
+        
         int randMatIndex = Random.Range(0, prefabsMaterials.Length);
-        rend.material = prefabsMaterials[randMatIndex];
-        currentMaterialString = prefabMaterialsNAMES[randMatIndex];
+        while(randMatIndex == currentMatIndex)
+        {
+            randMatIndex = Random.Range(0, prefabsMaterials.Length);
+        }
+        currentMatIndex = randMatIndex;
+        rend.material = prefabsMaterials[currentMatIndex];
+        currentMaterialString = prefabMaterialsNAMES[currentMatIndex];
     }
 
+
+    void killPlayer()
+    {
+        GameObject GO = Instantiate(prefabExplosion, gameObject.transform.position, gameObject.transform.rotation);
+        GO.GetComponent<ParticleSystem>().GetComponent<ParticleSystemRenderer>().material = prefabsMaterials[currentMatIndex];
+        GameObject GO2 = Instantiate(prefabExplosion, gameObject.transform.position, gameObject.transform.rotation);
+        GO2.GetComponent<ParticleSystem>().GetComponent<ParticleSystemRenderer>().material = prefabsMaterials[currentMatIndex];
+        Destroy(GetComponent<PlayerController>());
+        Destroy(GetComponent<Rigidbody>());
+        Destroy(GetComponent<MeshRenderer>());
+    }
 
 
 }
