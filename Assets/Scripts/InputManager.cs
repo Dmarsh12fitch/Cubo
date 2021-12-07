@@ -61,17 +61,17 @@ public class InputManager : MonoBehaviour
                 if(Distance.x < -swipeRange)
                 {
                     //left
-                    PlayerControllerScript.tryMove(-1);
+                    PlayerControllerScript.requestedMoveDirection = PlayerController.PlayerLane.Left;
                     stopTouch = true;
                 } else if(Distance.x > swipeRange)
                 {
                     //right
-                    PlayerControllerScript.tryMove(1);
+                    PlayerControllerScript.requestedMoveDirection= PlayerController.PlayerLane.Right;
                     stopTouch = true;
                 } else if(Distance.y > swipeRange)
                 {
                     //up
-                    PlayerControllerScript.tryJump();
+                    PlayerControllerScript.requestedPlayerState = PlayerController.PlayerState.Jump;
                     stopTouch = true;
                 } else if(Distance.y < -swipeRange)
                 {
@@ -93,7 +93,7 @@ public class InputManager : MonoBehaviour
             if(Mathf.Abs(Distance.x) < tapRange && Mathf.Abs(Distance.y) < tapRange)
             {
                 //you just tapped
-                PlayerControllerScript.tryBoost();
+                PlayerControllerScript.requestedPlayerState = PlayerController.PlayerState.Boost;
             }
         }
     }

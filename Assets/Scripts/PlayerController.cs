@@ -13,17 +13,16 @@ public class PlayerController : MonoBehaviour
     //private Transform camTransform;
     //private CinemachineCameraOffset cinemachineCameraOffset;
 
-    private bool inAir;
-    private bool inBoost;
-    private bool inFloat;
-    private bool inMove;
+    
 
     private float moveDirection;
     private float moveToX;
 
+    private bool boostIsCharged;
     private float boostDuration = 0.4f;
     private float boostSpeed = 120f;
-    private float speed = 30f;
+
+    private float defaultSpeed = 30f;
     private float jumpMod = 7.5f;
 
     public Material[] prefabsMaterials;
@@ -33,7 +32,26 @@ public class PlayerController : MonoBehaviour
     private float timer;
     private bool Dead;
 
+    private Vector3 ThisFrameVelocity;
 
+    public enum PlayerState
+    {
+        Jump,
+        Boost,
+        Immune,
+        Default
+    }
+    private PlayerState currentPlayerState = PlayerState.Default;
+    public PlayerState requestedPlayerState = PlayerState.Default;
+
+    public enum PlayerLane
+    {
+        Left,
+        Center,
+        Right
+    }
+    private PlayerLane currentLane = PlayerLane.Center;
+    public PlayerLane requestedMoveDirection = PlayerLane.Center;
 
     // Start is called before the first frame update
     void Start()
@@ -46,9 +64,173 @@ public class PlayerController : MonoBehaviour
         randomColorSwap();
     }
 
+    private void Update()
+    {
+        ThisFrameVelocity = new Vector3(0, 0, 0);
+
+        requestedMoveDirection = PlayerLane.Center;
+        switch (requestedMoveDirection)
+        {
+            case PlayerLane.Center:
+                break;
+            case PlayerLane.Left:
+                if(currentLane == PlayerLane.Left)
+                {
+                    break;
+                } else if (currentLane == PlayerLane.Center)
+                {
+                    currentLane = PlayerLane.Left;
+                    MoveLeft();
+                } else if(currentLane == PlayerLane.Right)
+                {
+                    currentLane = PlayerLane.Center;
+                    MoveLeft();
+                }
+                break;
+            case PlayerLane.Right:
+                if(currentLane != PlayerLane.Right)
+                {
+                    break;
+                } else if(currentLane != PlayerLane.Center)
+                {
+                    currentLane = PlayerLane.Right;
+                    MoveRight();
+                } else if(currentLane != PlayerLane.Left)
+                {
+                    currentLane = PlayerLane.Center;
+                    MoveRight();
+                }
+                break;
+        }
+
+        Debug.Log("State : " + currentPlayerState.ToString());
+
+        switch (requestedPlayerState)
+        {
+            case PlayerState.Default:
+                if(currentPlayerState == PlayerState.Default)
+                {
+                    Default();
+                }
+                break;
+            case PlayerState.Jump:
+                if(currentPlayerState == PlayerState.Default)
+                {
+                    Jump();
+                }
+                break;
+            case PlayerState.Boost:
+                if (currentPlayerState == PlayerState.Jump && boostIsCharged)
+                {
+                    Boost();
+                }
+                break;
+            case PlayerState.Immune:
+                Default();
+                break;
+        }
+        Movement();
+    }
+
+    //modify ThisFrameVelocity x
+    void MoveRight()
+    {
+
+
+    }
+
+    //modify ThisFrameVelocity x
+    void MoveLeft()
+    {
+
+    }
+
+
+
+
+    //modify ThisFrameVelocity z
+    void Default()
+    {
+        ThisFrameVelocity = new Vector3(ThisFrameVelocity.x, ThisFrameVelocity.y, defaultSpeed);
+    }
+
+    //modify ThisFrameVelocity z + y
+    void Boost()
+    {
+        boostIsCharged = false;
+        currentPlayerState = PlayerState.Boost;
+        ThisFrameVelocity = new Vector3(ThisFrameVelocity.x, 0, boostSpeed);
+        StartCoroutine(BoostCountdown());
+    }
+
+    //modify ThisFrameVelocity y
+    void Jump()
+    {
+        currentPlayerState = PlayerState.Jump;
+        rb.AddForce(new Vector3(0, jumpMod, 0), ForceMode.Impulse);
+        Debug.Log("GotHERE");
+        Default();
+    }
+
+    IEnumerator BoostCountdown()
+    { 
+        yield return new WaitForSeconds(boostDuration);
+        currentPlayerState = PlayerState.Immune;
+    }
+
+    void Movement()
+    {
+        rb.velocity = ThisFrameVelocity;
+    }
+
+
+
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        //reset if on ground
+        if (collision.gameObject.CompareTag("Ground") && rb.velocity.y < 0)
+        {
+            currentPlayerState = PlayerState.Default;
+        }
+
+        if (currentPlayerState == PlayerState.Boost || currentPlayerState == PlayerState.Immune)
+        {
+            if (collision.gameObject.CompareTag("BLACK") || collision.gameObject.CompareTag("RED")
+                || collision.gameObject.CompareTag("YELLOW") || collision.gameObject.CompareTag("BLUE")
+                || collision.gameObject.CompareTag("GREEN") || collision.gameObject.CompareTag("WHITE")
+                || collision.gameObject.CompareTag("PURPLE"))
+            {
+                collision.gameObject.GetComponent<CyberBlockScr>().EXPLODE();   //temp for this. it should be all of them
+            }
+        }
+        else
+        {
+            if (collision.gameObject.CompareTag(currentMaterialString))
+            {
+                randomColorSwap();
+                collision.gameObject.GetComponent<CyberBlockScr>().EXPLODE();
+            }
+            else if (collision.gameObject.CompareTag("BLACK") || collision.gameObject.CompareTag("RED")
+              || collision.gameObject.CompareTag("YELLOW") || collision.gameObject.CompareTag("BLUE")
+              || collision.gameObject.CompareTag("GREEN") || collision.gameObject.CompareTag("PURPLE")
+              || collision.gameObject.CompareTag("WHITE"))
+            {
+                Debug.Log("you lose!");
+                Debug.Log(" collided with : " + collision.gameObject.name);
+                killPlayer();
+            }
+        }
+    }
+
+
+
+
+    /*
     // Update is called once per frame
     void Update()
     {
+
         if (!Dead)
         {
             Debug.Log("BEFORE : " + rb.velocity.z);
@@ -183,58 +365,13 @@ public class PlayerController : MonoBehaviour
         inFloat = false;
         //stay invincible for a bit after
     }
+    */
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        //reset if on ground
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            inAir = false;
-            if (inBoost)
-            {
-                 
-                //cinemachineCameraOffset.ForceCameraPosition(new Vector3(0, 5.33333f, -3.33333f), new Quaternion(0, 0, 0, 0));
-                //camTransform.position = new Vector3(camTransform.position.x, 5.333333f, -3.33333f);
-                inBoost = false;
-            }
-        }
-
-        if (inBoost)
-        {
-            if(collision.gameObject.CompareTag("BLACK") || collision.gameObject.CompareTag("RED")
-                || collision.gameObject.CompareTag("YELLOW") || collision.gameObject.CompareTag("BLUE")
-                || collision.gameObject.CompareTag("GREEN") || collision.gameObject.CompareTag("WHITE")
-                || collision.gameObject.CompareTag("PURPLE"))
-            {
-                collision.gameObject.GetComponent<CyberBlockScr>().EXPLODE();   //temp for this. it should be all of them
-                //explode everything!
-                //rb.AddForce(new Vector3(0, 0, boostSpeed / 2), ForceMode.Impulse);
-                rb.velocity = new Vector3(0, 0, boostSpeed);
-            }
-        } else
-        {
-            if (collision.gameObject.CompareTag(currentMaterialString))
-            {
-                randomColorSwap();
-                collision.gameObject.GetComponent<CyberBlockScr>().EXPLODE();
-                //rb.AddForce(new Vector3(0, 0, speed / 2), ForceMode.Impulse);
-            } else if(collision.gameObject.CompareTag("BLACK") || collision.gameObject.CompareTag("RED")
-                || collision.gameObject.CompareTag("YELLOW") || collision.gameObject.CompareTag("BLUE")
-                || collision.gameObject.CompareTag("GREEN") || collision.gameObject.CompareTag("PURPLE")
-                || collision.gameObject.CompareTag("WHITE"))
-            {
-                //explode you!
-                Debug.Log("you lose!");
-                Debug.Log(" collided with : " + collision.gameObject.name);
-                killPlayer();
-            }
-        }
-    }
 
     void randomColorSwap()
     {
         int randMatIndex = Random.Range(0, prefabsMaterials.Length);
-        while(randMatIndex == currentMatIndex)
+        while (randMatIndex == currentMatIndex)
         {
             randMatIndex = Random.Range(0, prefabsMaterials.Length);
         }
