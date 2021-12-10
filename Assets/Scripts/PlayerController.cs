@@ -66,9 +66,9 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        
         ThisFrameVelocity = new Vector3(0, 0, 0);
 
-        requestedMoveDirection = PlayerLane.Center;
         switch (requestedMoveDirection)
         {
             case PlayerLane.Center:
@@ -102,6 +102,7 @@ public class PlayerController : MonoBehaviour
                 }
                 break;
         }
+        requestedMoveDirection = PlayerLane.Center;
 
         Debug.Log("State : " + currentPlayerState.ToString());
 
@@ -129,8 +130,11 @@ public class PlayerController : MonoBehaviour
                 Default();
                 break;
         }
+
+        requestedPlayerState = PlayerState.Default;
         Movement();
     }
+
 
     //modify ThisFrameVelocity x
     void MoveRight()
@@ -139,9 +143,11 @@ public class PlayerController : MonoBehaviour
 
     }
 
+
     //modify ThisFrameVelocity x
     void MoveLeft()
     {
+
 
     }
 
