@@ -10,7 +10,7 @@ public class SceneSectionManager : MonoBehaviour
     //private Transform playerTransform;
 
     private int lastSpawnedZ = 1200;
-
+    private int lastIndexUsed = 0;
 
 
 
@@ -39,13 +39,32 @@ public class SceneSectionManager : MonoBehaviour
     {
         if (transform.position.z > lastSpawnedZ - 1100)
         {
-            lastSpawnedZ += 400;
-            int rand = Random.Range(0, sceneSections.Length);
-            var GO = Instantiate(sceneSections[rand]);
-            GO.transform.Translate(0, 0, lastSpawnedZ);
-            instantiatedSceneSections.Add(GO);
+            SpawnNextSection();
             DeletePastSection();
         }
+    }
+
+    void SpawnNextSection()
+    {
+        lastSpawnedZ += 400;
+        int rand = 0;
+        if (lastIndexUsed >= 6 && lastIndexUsed <= 8)
+        {
+            rand = Random.Range(6, 9);
+            int rand2 = Random.Range(0, sceneSections.Length);
+            int rand3 = Random.Range(0, 2);
+            if(rand3 == 1)
+            {
+                rand = rand2;
+            }
+        } else
+        {
+            rand = Random.Range(0, sceneSections.Length);
+        }
+        var GO = Instantiate(sceneSections[rand]);
+        lastIndexUsed = rand;
+        GO.transform.Translate(0, 0, lastSpawnedZ);
+        instantiatedSceneSections.Add(GO);
     }
 
     void DeletePastSection()
