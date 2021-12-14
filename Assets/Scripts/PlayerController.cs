@@ -64,6 +64,7 @@ public class PlayerController : MonoBehaviour
         randomColorSwap();
     }
 
+    /*
     private void Update()
     {
         
@@ -135,7 +136,7 @@ public class PlayerController : MonoBehaviour
         Movement();
     }
 
-
+    */
     //modify ThisFrameVelocity x
     void MoveRight()
     {
