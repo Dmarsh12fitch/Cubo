@@ -217,6 +217,10 @@ public class PlayerController : MonoBehaviour
             {
                 randomColorSwap();
                 collision.gameObject.GetComponent<CyberBlockScr>().EXPLODE();
+            } else if (collision.gameObject.CompareTag("StarPoint"))
+            {
+                randomColorSwap();
+                collision.gameObject.GetComponent<starPointCryberScr>().EXPLODE();
             }
             else if (collision.gameObject.CompareTag("BLACK") || collision.gameObject.CompareTag("RED")
               || collision.gameObject.CompareTag("YELLOW") || collision.gameObject.CompareTag("BLUE")

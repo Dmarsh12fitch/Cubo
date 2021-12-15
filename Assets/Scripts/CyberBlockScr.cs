@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CyberBlockScr : MonoBehaviour
 {
-    public GameObject prefabExplosionEffect;        //MAKE THIS
+    public GameObject prefabExplosionEffect;
     public Material MyColorMat;
 
     public void EXPLODE()
