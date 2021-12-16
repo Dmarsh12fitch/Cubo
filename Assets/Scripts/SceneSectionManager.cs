@@ -12,7 +12,7 @@ public class SceneSectionManager : MonoBehaviour
     private int lastSpawnedZ = 1200;
     private int lastIndexUsed = 0;
 
-
+    private bool firstTime = true;
 
 
 
@@ -24,6 +24,9 @@ public class SceneSectionManager : MonoBehaviour
     {
         //playerTransform = GameObject.Find("Player").GetComponent<Transform>();
         instantiatedSceneSections.Add(GameObject.Find("Segment BEGINNING"));
+        instantiatedSceneSections.Add(GameObject.Find("SegmentF"));
+        instantiatedSceneSections.Add(GameObject.Find("demo"));
+        instantiatedSceneSections.Add(GameObject.Find("SegmentD"));
         //instantiatedSceneSections.Add(GameObject.Find("Segment SECOND"));     //this will be done but not yet
     }
 
@@ -40,7 +43,13 @@ public class SceneSectionManager : MonoBehaviour
         if (transform.position.z > lastSpawnedZ - 1100)
         {
             SpawnNextSection();
-            DeletePastSection();
+            if (firstTime)
+            {
+                firstTime = false;
+            } else
+            {
+                DeletePastSection();
+            }
         }
     }
 
@@ -69,16 +78,8 @@ public class SceneSectionManager : MonoBehaviour
 
     void DeletePastSection()
     {
-        /*          //this despawning doesn't work
-        foreach(GameObject section in instantiatedSceneSections)
-        {
-            if (transform.position.z > section.transform.position.z + 400)
-            {
-                Destroy(section);
-                instantiatedSceneSections.Remove(section);
-            }
-        }
-        */
+        Destroy(instantiatedSceneSections[0]);
+        instantiatedSceneSections.RemoveAt(0);
     }
 
 }

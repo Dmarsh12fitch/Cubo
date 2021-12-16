@@ -28,7 +28,7 @@ public class StarPontSpawnScr : MonoBehaviour
                 int rand = (int)Random.Range(0, starPointArray.Length);    //TWO more than the number of blocks
                 if (rand != starPointArray.Length - 1 && starPointsSpawned < 2)                               //ONE less than above
                 {
-                    int rand2 = Random.Range(0, 5);
+                    int rand2 = Random.Range(0, 10);
                     if(rand2 == 0)
                     {
                         var GO = Instantiate(starPointArray[rand], gameObject.transform);

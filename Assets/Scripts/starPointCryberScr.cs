@@ -33,7 +33,7 @@ public class starPointCryberScr : MonoBehaviour
         timer -= Time.deltaTime;
         if(timer < 0)
         {
-            timer = 0.75f;
+            timer = 1.5f;
             rot1Speed = randRotSpeed();
             rot2Speed = randRotSpeed();
             rot3Speed = randRotSpeed();

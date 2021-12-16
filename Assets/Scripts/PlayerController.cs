@@ -1,19 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
     private Rigidbody rb;
     private MeshRenderer rend;
     public string currentMaterialString;
+    public Text starPointText;
+    public Image boostBar;
 
     public GameObject prefabExplosion;
 
     //private Transform camTransform;
     //private CinemachineCameraOffset cinemachineCameraOffset;
 
-    
+    private float boostBarFill;
+    private int starPoints = -1;
 
     private float moveDirection;
     private float moveToX;
@@ -58,13 +62,15 @@ public class PlayerController : MonoBehaviour
     {
         rb = GameObject.Find("Player").GetComponent<Rigidbody>();
         rend = GameObject.Find("Player").GetComponent<MeshRenderer>();
+        starPointText = GameObject.Find("StarPointsCollected").GetComponent<Text>();
+        boostBar = GameObject.Find("BoostBar").GetComponent<Image>();
+        plusStarPoint();
         //cinemachineCameraOffset = GameObject.Find("Main Camera").GetComponent<CinemachineCameraOffset>();
         //camTransform = GameObject.Find("Reg CM Virtual Camera").GetComponent<Transform>();
 
         randomColorSwap();
     }
 
-    /*
     private void Update()
     {
         
@@ -122,7 +128,7 @@ public class PlayerController : MonoBehaviour
                 }
                 break;
             case PlayerState.Boost:
-                if (currentPlayerState == PlayerState.Jump && boostIsCharged)
+                if (currentPlayerState == PlayerState.Jump && boostIsCharged && boostBarFill >= 1)
                 {
                     Boost();
                 }
@@ -136,7 +142,6 @@ public class PlayerController : MonoBehaviour
         Movement();
     }
 
-    */
     //modify ThisFrameVelocity x
     void MoveRight()
     {
@@ -165,6 +170,8 @@ public class PlayerController : MonoBehaviour
     void Boost()
     {
         boostIsCharged = false;
+        boostBarFill = 0;
+        updateBoostBar();
         currentPlayerState = PlayerState.Boost;
         ThisFrameVelocity = new Vector3(ThisFrameVelocity.x, 0, boostSpeed);
         StartCoroutine(BoostCountdown());
@@ -216,10 +223,13 @@ public class PlayerController : MonoBehaviour
             if (collision.gameObject.CompareTag(currentMaterialString))
             {
                 randomColorSwap();
+                boostBarFill += 0.1f;
+                updateBoostBar();
                 collision.gameObject.GetComponent<CyberBlockScr>().EXPLODE();
             } else if (collision.gameObject.CompareTag("StarPoint"))
             {
                 randomColorSwap();
+                plusStarPoint();
                 collision.gameObject.GetComponent<starPointCryberScr>().EXPLODE();
             }
             else if (collision.gameObject.CompareTag("BLACK") || collision.gameObject.CompareTag("RED")
@@ -234,7 +244,16 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void plusStarPoint()
+    {
+        starPoints++;
+        starPointText.text = starPoints.ToString();
+    }
 
+    void updateBoostBar()
+    {
+        boostBar.fillAmount = boostBarFill;
+    }
 
 
     /*
